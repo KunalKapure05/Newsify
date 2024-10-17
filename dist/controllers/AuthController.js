@@ -86,6 +86,19 @@ exports.login = login;
 const logout = async (req, res) => {
     try {
         res.clearCookie('token', { path: '/' });
+        const _req = req;
+        const userId = parseInt(_req.userId, 10);
+        console.log("Parsed userId as number:", userId);
+        if (isNaN(userId)) {
+            return res.status(400).json({ message: "Invalid user ID format" });
+        }
+        const user = await db_1.default.user.findFirst({
+            where: {
+                id: userId, // Directly compare the id
+            }
+        });
+        const name = user?.name;
+        return res.json({ user: `${name} has logged out` });
         return res.status(200).json({ message: "Logged Out Succesfully" });
     }
     catch (error) {

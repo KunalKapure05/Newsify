@@ -10,5 +10,6 @@ const jwtAuth_1 = __importDefault(require("../middlewares/jwtAuth"));
 const router = (0, express_1.Router)();
 router.post('/auth/register', AuthController_1.register);
 router.post('/auth/login', AuthController_1.login);
+router.get('/auth/logout', jwtAuth_1.default, AuthController_1.logout);
 router.get('/profile', jwtAuth_1.default, ProfileController_1.getUser);
 exports.default = router;
