@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.register = void 0;
+exports.logout = exports.login = exports.register = void 0;
 const db_1 = __importDefault(require("../config/db"));
 const validate_1 = require("../Validation/validate");
 const zod_1 = require("zod");
@@ -83,3 +83,13 @@ const login = async function (req, res) {
     }
 };
 exports.login = login;
+const logout = async (req, res) => {
+    try {
+        res.clearCookie('token', { path: '/' });
+        return res.status(200).json({ message: "Logged Out Succesfully" });
+    }
+    catch (error) {
+        return res.status(500).json({ message: "Error Logging out", error: error });
+    }
+};
+exports.logout = logout;

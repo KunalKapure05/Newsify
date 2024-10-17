@@ -104,4 +104,12 @@ import {config} from '../config/config'
 
   }
   
-export {register,login} 
+  const logout = async (req: Request, res: Response) => {
+    try {
+        res.clearCookie('token', { path: '/' }); 
+        return res.status(200).json({message:"Logged Out Succesfully" });
+    } catch (error) {
+        return res.status(500).json({ message: "Error Logging out", error: error });
+    }
+}
+export {register,login,logout} 
