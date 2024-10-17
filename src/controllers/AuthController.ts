@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt'
 import {sign} from 'jsonwebtoken'
 import {config} from '../config/config'
 
+
  const register = async (req: Request, res: Response) => {
     try {
      
@@ -103,4 +104,4 @@ import {config} from '../config/config'
 
   }
   
-export {register,login}
+export {register,login} 

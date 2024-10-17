@@ -3,6 +3,7 @@ const app = express();
 
 import apiRoutes from './routes/api'
 
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -11,5 +12,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api', apiRoutes);
+
+
 
 export default app;
