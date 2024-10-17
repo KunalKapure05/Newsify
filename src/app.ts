@@ -1,9 +1,11 @@
 import express from 'express';
 const app = express();
+import fileUpload from 'express-fileupload';
+
 
 import apiRoutes from './routes/api'
 
-
+app.use(fileUpload()); 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -12,6 +14,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api', apiRoutes);
+
 
 
 
