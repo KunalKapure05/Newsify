@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateRandomNumber = exports.bytesToMb = exports.imageValidator = void 0;
+exports.getImageUrl = exports.generateRandomNumber = exports.bytesToMb = exports.imageValidator = void 0;
+const config_1 = require("../config/config");
 const fileSystem_1 = require("../config/fileSystem");
 const imageValidator = (size, mime) => {
     if (bytesToMb(size) > 5)
@@ -18,3 +19,7 @@ const generateRandomNumber = () => {
     return Math.floor(Math.random() * 1000000).toString();
 };
 exports.generateRandomNumber = generateRandomNumber;
+const getImageUrl = (imgName) => {
+    return `${config_1.config.app_url}/images/${imgName}`;
+};
+exports.getImageUrl = getImageUrl;

@@ -10,6 +10,7 @@ const api_1 = __importDefault(require("./routes/api"));
 app.use((0, express_fileupload_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.static("public"));
 app.get('/', (req, res) => {
     res.json("Welcome to homepage!");
 });

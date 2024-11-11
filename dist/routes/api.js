@@ -15,4 +15,5 @@ router.get('/auth/logout', jwtAuth_1.default, AuthController_1.logout);
 router.get('/profile', jwtAuth_1.default, ProfileController_1.getUser);
 router.put('/profile/:id', ProfileController_1.updateUserProfile);
 router.post('/news/', jwtAuth_1.default, NewsController_1.createNews);
+router.get('/news/', NewsController_1.getNews);
 exports.default = router;

@@ -2,14 +2,12 @@
 import { z } from 'zod';
 import prisma from '../config/db';
 import { Request, Response } from "express";
-import bcrypt from 'bcrypt'
-import {sign} from 'jsonwebtoken'
-import {config} from '../config/config'
 import {newsSchema} from '../Validation/newsValidate';
 import { AuthRequest } from '../Interfaces/AuthRequest';
 import { generateRandomNumber, imageValidator } from '../utils/helper';
 import { UploadedFile } from 'express-fileupload';
-import path from 'path';
+import transformNewsAPi from '../utils/NewsApiTransform';
+
 
 
 const createNews = async function(req: Request, res: Response) {
@@ -94,4 +92,31 @@ const createNews = async function(req: Request, res: Response) {
     return res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
-export {createNews};
+
+const getNews = async function(req:Request,res:Response){
+  try {
+    const news = await prisma.news.findMany({
+      include:{
+        user:{
+          select:{
+            id:true,
+            name:true,
+            profile:true
+            
+          }
+        }
+      }
+
+    });
+    const newsTransform = await Promise.all(news.map(item => transformNewsAPi(item)));
+    return res.status(200).json({ news: newsTransform});
+     
+}
+catch(error){
+  return res.status(500).json({message: "An unexpected error occurred"});
+}
+}
+
+
+
+export {createNews,getNews};

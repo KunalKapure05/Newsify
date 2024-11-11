@@ -1,3 +1,4 @@
+import { config } from "../config/config";
 import { supportedMimes } from "../config/fileSystem";
 
 
@@ -19,4 +20,9 @@ const generateRandomNumber = ()=>{
      return Math.floor(Math.random() * 1000000).toString();
 }
 
-export { imageValidator, bytesToMb,generateRandomNumber };
+const getImageUrl = (imgName: string) => {
+    return `${config.app_url}/images/${imgName}`;
+};
+
+
+export { imageValidator, bytesToMb,generateRandomNumber,getImageUrl };

@@ -3,12 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createNews = void 0;
+exports.getNews = exports.createNews = void 0;
 /* eslint-disable @typescript-eslint/no-unused-vars */
 const zod_1 = require("zod");
 const db_1 = __importDefault(require("../config/db"));
 const newsValidate_1 = require("../Validation/newsValidate");
 const helper_1 = require("../utils/helper");
+const NewsApiTransform_1 = __importDefault(require("../utils/NewsApiTransform"));
 const createNews = async function (req, res) {
     try {
         const validatedData = newsValidate_1.newsSchema.parse(req.body);
@@ -66,3 +67,24 @@ const createNews = async function (req, res) {
     }
 };
 exports.createNews = createNews;
+const getNews = async function (req, res) {
+    try {
+        const news = await db_1.default.news.findMany({
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        profile: true
+                    }
+                }
+            }
+        });
+        const newsTransform = await Promise.all(news.map(item => (0, NewsApiTransform_1.default)(item)));
+        return res.status(200).json({ news: newsTransform });
+    }
+    catch (error) {
+        return res.status(500).json({ message: "An unexpected error occurred" });
+    }
+};
+exports.getNews = getNews;
