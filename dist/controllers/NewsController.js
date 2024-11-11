@@ -69,7 +69,16 @@ const createNews = async function (req, res) {
 exports.createNews = createNews;
 const getNews = async function (req, res) {
     try {
+        let page = Number(req.query.page) || 1;
+        if (page <= 0)
+            page = 1;
+        let limit = Number(req.query.limit) || 1;
+        if (limit <= 0 || limit > 100)
+            limit = 10;
+        const skip = (page - 1) * limit;
         const news = await db_1.default.news.findMany({
+            take: limit,
+            skip: skip,
             include: {
                 user: {
                     select: {
@@ -81,7 +90,16 @@ const getNews = async function (req, res) {
             }
         });
         const newsTransform = await Promise.all(news.map(item => (0, NewsApiTransform_1.default)(item)));
-        return res.status(200).json({ news: newsTransform });
+        const totalNews = await db_1.default.news.count();
+        const totalPages = Math.ceil(totalNews / limit);
+        return res.status(200).json({
+            news: newsTransform,
+            metadata: {
+                totalPages: totalPages,
+                currentPage: page,
+                limit: limit,
+            }
+        });
     }
     catch (error) {
         return res.status(500).json({ message: "An unexpected error occurred" });
