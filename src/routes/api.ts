@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { register, login, logout } from '../controllers/AuthController';
 import { getUser, updateUserProfile } from '../controllers/ProfileController';
 import jwtAuthMiddleware from '../middlewares/jwtAuth';
-import { createNews, getAllNews, showNews, updateNews } from '../controllers/NewsController';
+import { createNews, deleteNews, getAllNews, showNews, updateNews} from '../controllers/NewsController';
 
 const router = Router();
 
@@ -20,5 +20,6 @@ router.post('/news', jwtAuthMiddleware, createNews);
 router.get('/news', getAllNews);
 router.get('/news/:id', showNews);  
 router.put('/news/:id', jwtAuthMiddleware, updateNews);
+router.delete('/news/:id', jwtAuthMiddleware,deleteNews);
 
 export default router;

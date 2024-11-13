@@ -241,4 +241,41 @@ const updateNews = async function(req: Request, res: Response) {
   }
 };
 
-export {createNews,getAllNews,showNews,updateNews};
+const deleteNews = async function(req:Request, res:Response){
+  try {
+    const {id} = req.params;
+    const _req = req as unknown as AuthRequest;
+    console.log("Extracted userId from token:", _req.userId);
+    const userId = Number(_req.userId);
+
+    const news = await prisma.news.findUnique({
+      where: {
+        id: Number(id),
+      }
+    });
+
+    if(userId!==news?.user_id){
+      return res.status(403).json({message: "Unauthorized to delete this news"});
+
+    }
+
+    //Delete image from fileSystem
+    removeImage(news.image);
+    const response = await prisma.news.delete({
+      where:{
+        id:Number(id)
+      }
+    })
+    return res.status(200).json({message: "News deleted successfully", news: response});
+
+
+
+}catch(error){
+  return res.status(500).json({message: "An unexpected error occurred"});
+}
+}
+
+
+
+
+export {createNews,getAllNews,showNews,updateNews,deleteNews};

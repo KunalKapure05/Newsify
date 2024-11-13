@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateNews = exports.showNews = exports.getAllNews = exports.createNews = void 0;
+exports.deleteNews = exports.updateNews = exports.showNews = exports.getAllNews = exports.createNews = void 0;
 /* eslint-disable @typescript-eslint/no-unused-vars */
 const zod_1 = require("zod");
 const db_1 = __importDefault(require("../config/db"));
@@ -188,3 +188,31 @@ const updateNews = async function (req, res) {
     }
 };
 exports.updateNews = updateNews;
+const deleteNews = async function (req, res) {
+    try {
+        const { id } = req.params;
+        const _req = req;
+        console.log("Extracted userId from token:", _req.userId);
+        const userId = Number(_req.userId);
+        const news = await db_1.default.news.findUnique({
+            where: {
+                id: Number(id),
+            }
+        });
+        if (userId !== news?.user_id) {
+            return res.status(403).json({ message: "Unauthorized to delete this news" });
+        }
+        //Delete image from fileSystem
+        (0, helper_1.removeImage)(news.image);
+        const response = await db_1.default.news.delete({
+            where: {
+                id: Number(id)
+            }
+        });
+        return res.status(200).json({ message: "News deleted successfully", news: response });
+    }
+    catch (error) {
+        return res.status(500).json({ message: "An unexpected error occurred" });
+    }
+};
+exports.deleteNews = deleteNews;

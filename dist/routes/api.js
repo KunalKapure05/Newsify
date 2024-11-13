@@ -21,4 +21,5 @@ router.post('/news', jwtAuth_1.default, NewsController_1.createNews);
 router.get('/news', NewsController_1.getAllNews);
 router.get('/news/:id', NewsController_1.showNews);
 router.put('/news/:id', jwtAuth_1.default, NewsController_1.updateNews);
+router.delete('/news/:id', jwtAuth_1.default, NewsController_1.deleteNews);
 exports.default = router;
