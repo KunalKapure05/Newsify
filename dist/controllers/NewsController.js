@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.showNews = exports.getAllNews = exports.createNews = void 0;
+exports.updateNews = exports.showNews = exports.getAllNews = exports.createNews = void 0;
 /* eslint-disable @typescript-eslint/no-unused-vars */
 const zod_1 = require("zod");
 const db_1 = __importDefault(require("../config/db"));
@@ -131,3 +131,60 @@ const showNews = async function (req, res) {
     }
 };
 exports.showNews = showNews;
+const updateNews = async function (req, res) {
+    try {
+        const { id } = req.params;
+        const validatedData = newsValidate_1.newsSchema.parse(req.body);
+        const _req = req;
+        console.log("Extracted userId from token:", _req.userId);
+        const userId = Number(_req.userId);
+        const news = await db_1.default.news.findUnique({
+            where: {
+                id: Number(id),
+            }
+        });
+        if (userId !== news?.user_id) {
+            return res.status(403).json({ message: "Unauthorized to update this news" });
+        }
+        const image = req?.files?.image;
+        if (image) {
+            // Check if `image` is an array
+            const singleImage = Array.isArray(image) ? image[0] : image;
+            // Validate the image file
+            const message = (0, helper_1.imageValidator)(singleImage.size, singleImage.mimetype);
+            if (message !== null) {
+                return res.status(400).json({
+                    errors: {
+                        image: message
+                    }
+                });
+            }
+            // Upload new image
+            const imgExt = singleImage.name.split('.');
+            const imageName = (0, helper_1.generateRandomNumber)() + "." + imgExt[imgExt.length - 1]; // Generate a valid image name
+            const imageFilePath = process.cwd() + '/public/images/' + imageName;
+            // Move the file to the target location
+            await singleImage.mv(imageFilePath);
+            //Delete old image
+            (0, helper_1.removeImage)(news.image);
+            const updatedNews = await db_1.default.news.update({
+                where: { id: Number(id) },
+                data: {
+                    ...validatedData,
+                    image: imageName,
+                },
+            });
+            return res.status(200).json({ message: "News updated successfully", news: updatedNews });
+        }
+    }
+    catch (error) {
+        if (error instanceof zod_1.z.ZodError) {
+            return res.status(400).json({ error: error.errors });
+        }
+        if (error instanceof Error) {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "An unexpected error occurred" });
+    }
+};
+exports.updateNews = updateNews;

@@ -1,5 +1,6 @@
 import { config } from "../config/config";
 import { supportedMimes } from "../config/fileSystem";
+import fs from 'fs'
 
 
 
@@ -24,5 +25,12 @@ const getImageUrl = (imgName: string) => {
     return `${config.app_url}/images/${imgName}`;
 };
 
+const removeImage = (imgName: string) => {
+    const path = process.cwd() + "/public/images/" + imgName;
+    if(fs.existsSync(path)) {
+        fs.unlinkSync(path);
 
-export { imageValidator, bytesToMb,generateRandomNumber,getImageUrl };
+    }
+}
+
+export { imageValidator, bytesToMb,generateRandomNumber,getImageUrl,removeImage };

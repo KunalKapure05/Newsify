@@ -4,7 +4,7 @@ import prisma from '../config/db';
 import { Request, Response } from "express";
 import {newsSchema} from '../Validation/newsValidate';
 import { AuthRequest } from '../Interfaces/AuthRequest';
-import { generateRandomNumber, imageValidator } from '../utils/helper';
+import { generateRandomNumber, imageValidator, removeImage } from '../utils/helper';
 import { UploadedFile } from 'express-fileupload';
 import transformNewsAPi from '../utils/NewsApiTransform';
 
@@ -165,5 +165,80 @@ const showNews = async function(req: Request, res: Response) {
   }
 }
 
+const updateNews = async function(req: Request, res: Response) {
+  try {
+    const {id} = req.params;
+    const validatedData = newsSchema.parse(req.body);
 
-export {createNews,getAllNews,showNews};
+    const _req = req as unknown as AuthRequest;
+    console.log("Extracted userId from token:", _req.userId);
+    const userId = Number(_req.userId);
+
+    const news = await prisma.news.findUnique({
+      where: {
+        id: Number(id),
+      }
+    });
+
+    if (userId !== news?.user_id) {
+      return res.status(403).json({ message: "Unauthorized to update this news" });
+    }
+
+    const image = req?.files?.image;
+    if (image) {
+      // Check if `image` is an array
+      const singleImage = Array.isArray(image) ? image[0] : image;
+
+      // Validate the image file
+      const message = imageValidator(singleImage.size, singleImage.mimetype);
+      if (message !== null) {
+        return res.status(400).json({
+          errors: {
+            image: message
+          }
+        });
+      }
+
+         // Upload new image
+         const imgExt = singleImage.name.split('.');
+         const imageName = generateRandomNumber() + "." + imgExt[imgExt.length - 1]; // Generate a valid image name
+         const imageFilePath = process.cwd() + '/public/images/' + imageName;
+         
+         // Move the file to the target location
+         await singleImage.mv(imageFilePath);
+
+
+      //Delete old image
+      removeImage(news.image)  
+
+      const updatedNews = await prisma.news.update({
+        where: { id: Number(id) },
+        data: {
+          ...validatedData,
+          image: imageName, 
+        },
+      });
+  
+      return res.status(200).json({ message: "News updated successfully", news: updatedNews });
+  
+    }
+
+   
+
+  } catch (error) {
+   
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+
+   
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
+    }
+
+  
+    return res.status(500).json({ message: "An unexpected error occurred" });
+  }
+};
+
+export {createNews,getAllNews,showNews,updateNews};
