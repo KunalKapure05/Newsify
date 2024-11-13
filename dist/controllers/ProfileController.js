@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateUserProfile = exports.getUser = void 0;
-const db_1 = __importDefault(require("../config/db"));
+const db_1 = __importDefault(require("../DB/db"));
 const helper_1 = require("../utils/helper");
 const path_1 = __importDefault(require("path"));
 const getUser = async function (req, res) {
@@ -19,7 +19,7 @@ const getUser = async function (req, res) {
         const user = await db_1.default.user.findFirst({
             where: {
                 id: userId, // Directly compare the id
-            }
+            },
         });
         if (!user) {
             return res.status(400).json({ message: "User not found" });
@@ -28,7 +28,9 @@ const getUser = async function (req, res) {
     }
     catch (error) {
         console.error("Error occurred in getUser:", error);
-        return res.status(500).json({ message: "An unexpected error occurred", error: error });
+        return res
+            .status(500)
+            .json({ message: "An unexpected error occurred", error: error });
     }
 };
 exports.getUser = getUser;
@@ -57,9 +59,9 @@ const updateUserProfile = async function (req, res) {
                 },
             });
         }
-        const imgExt = file?.name.split('.');
+        const imgExt = file?.name.split(".");
         const imageName = `${(0, helper_1.generateRandomNumber)()}.${imgExt[imgExt.length - 1]}`; // Generate a valid image name
-        const ImagefilePath = path_1.default.resolve(__dirname, '../../public/images', imageName);
+        const ImagefilePath = path_1.default.resolve(__dirname, "../../public/images", imageName);
         // Move the file to the target location
         await file.mv(ImagefilePath);
         // Update user profile in the database
@@ -73,12 +75,14 @@ const updateUserProfile = async function (req, res) {
         });
         return res.status(200).json({
             updatedData,
-            message: "Profile updated successfully"
+            message: "Profile updated successfully",
         });
     }
     catch (error) {
         console.error("Error occurred in updateUserProfile:", error);
-        return res.status(500).json({ message: "An unexpected error occurred", error: error });
+        return res
+            .status(500)
+            .json({ message: "An unexpected error occurred", error: error });
     }
 };
 exports.updateUserProfile = updateUserProfile;

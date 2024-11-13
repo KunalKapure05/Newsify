@@ -6,10 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteNews = exports.updateNews = exports.showNews = exports.getAllNews = exports.createNews = void 0;
 /* eslint-disable @typescript-eslint/no-unused-vars */
 const zod_1 = require("zod");
-const db_1 = __importDefault(require("../config/db"));
+const db_1 = __importDefault(require("../DB/db"));
 const newsValidate_1 = require("../Validation/newsValidate");
 const helper_1 = require("../utils/helper");
 const NewsApiTransform_1 = __importDefault(require("../utils/NewsApiTransform"));
+const redis_1 = __importDefault(require("../DB/redis"));
 const createNews = async function (req, res) {
     try {
         const validatedData = newsValidate_1.newsSchema.parse(req.body);
@@ -26,9 +27,9 @@ const createNews = async function (req, res) {
             return res.status(400).json({ message });
         }
         // Image Upload
-        const imgExt = file?.name.split('.');
+        const imgExt = file?.name.split(".");
         const imageName = (0, helper_1.generateRandomNumber)() + "." + imgExt[1]; // Generate a valid image name
-        const ImagefilePath = process.cwd() + '/public/images/' + imageName;
+        const ImagefilePath = process.cwd() + "/public/images/" + imageName;
         // Move the file to the target location
         await file.mv(ImagefilePath);
         const _req = req;
@@ -38,8 +39,8 @@ const createNews = async function (req, res) {
         }
         const user = await db_1.default.user.findFirst({
             where: {
-                id: userId
-            }
+                id: userId,
+            },
         });
         if (!user) {
             return res.status(400).json({ message: "User not found" });
@@ -50,11 +51,15 @@ const createNews = async function (req, res) {
                 ...validatedData,
                 image: imageName,
                 user_id: userId,
-                name: name
-            }
+                name: name,
+            },
         });
-        return res.status(200).json({ news
+        //Remove Cache
+        redis_1.default.del("/api/news", (error) => {
+            if (error)
+                throw error;
         });
+        return res.status(200).json({ news });
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
@@ -84,12 +89,12 @@ const getAllNews = async function (req, res) {
                     select: {
                         id: true,
                         name: true,
-                        profile: true
-                    }
-                }
-            }
+                        profile: true,
+                    },
+                },
+            },
         });
-        const newsTransform = await Promise.all(news.map(item => (0, NewsApiTransform_1.default)(item)));
+        const newsTransform = await Promise.all(news.map((item) => (0, NewsApiTransform_1.default)(item)));
         const totalNews = await db_1.default.news.count();
         const totalPages = Math.ceil(totalNews / limit);
         return res.status(200).json({
@@ -98,7 +103,7 @@ const getAllNews = async function (req, res) {
                 totalPages: totalPages,
                 currentPage: page,
                 limit: limit,
-            }
+            },
         });
     }
     catch (error) {
@@ -141,10 +146,12 @@ const updateNews = async function (req, res) {
         const news = await db_1.default.news.findUnique({
             where: {
                 id: Number(id),
-            }
+            },
         });
         if (userId !== news?.user_id) {
-            return res.status(403).json({ message: "Unauthorized to update this news" });
+            return res
+                .status(403)
+                .json({ message: "Unauthorized to update this news" });
         }
         const image = req?.files?.image;
         if (image) {
@@ -155,14 +162,14 @@ const updateNews = async function (req, res) {
             if (message !== null) {
                 return res.status(400).json({
                     errors: {
-                        image: message
-                    }
+                        image: message,
+                    },
                 });
             }
             // Upload new image
-            const imgExt = singleImage.name.split('.');
+            const imgExt = singleImage.name.split(".");
             const imageName = (0, helper_1.generateRandomNumber)() + "." + imgExt[imgExt.length - 1]; // Generate a valid image name
-            const imageFilePath = process.cwd() + '/public/images/' + imageName;
+            const imageFilePath = process.cwd() + "/public/images/" + imageName;
             // Move the file to the target location
             await singleImage.mv(imageFilePath);
             //Delete old image
@@ -174,7 +181,9 @@ const updateNews = async function (req, res) {
                     image: imageName,
                 },
             });
-            return res.status(200).json({ message: "News updated successfully", news: updatedNews });
+            return res
+                .status(200)
+                .json({ message: "News updated successfully", news: updatedNews });
         }
     }
     catch (error) {
@@ -197,19 +206,23 @@ const deleteNews = async function (req, res) {
         const news = await db_1.default.news.findUnique({
             where: {
                 id: Number(id),
-            }
+            },
         });
         if (userId !== news?.user_id) {
-            return res.status(403).json({ message: "Unauthorized to delete this news" });
+            return res
+                .status(403)
+                .json({ message: "Unauthorized to delete this news" });
         }
         //Delete image from fileSystem
         (0, helper_1.removeImage)(news.image);
         const response = await db_1.default.news.delete({
             where: {
-                id: Number(id)
-            }
+                id: Number(id),
+            },
         });
-        return res.status(200).json({ message: "News deleted successfully", news: response });
+        return res
+            .status(200)
+            .json({ message: "News deleted successfully", news: response });
     }
     catch (error) {
         return res.status(500).json({ message: "An unexpected error occurred" });

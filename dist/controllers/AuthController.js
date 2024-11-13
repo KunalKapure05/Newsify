@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logout = exports.login = exports.register = void 0;
-const db_1 = __importDefault(require("../config/db"));
+const db_1 = __importDefault(require("../DB/db"));
 const validate_1 = require("../Validation/validate");
 const zod_1 = require("zod");
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -25,15 +25,17 @@ const register = async (req, res) => {
         const newUser = await db_1.default.user.create({
             data: validatedData,
         });
-        const token = (0, jsonwebtoken_1.sign)({ userId: newUser.id }, config_1.config.jwt_key, { expiresIn: '72h' });
+        const token = (0, jsonwebtoken_1.sign)({ userId: newUser.id }, config_1.config.jwt_key, {
+            expiresIn: "72h",
+        });
         res.json({
-            "newUser": newUser,
-            "token": token,
+            newUser: newUser,
+            token: token,
         });
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
-            const messages = error.errors.map(err => err.message);
+            const messages = error.errors.map((err) => err.message);
             return res.status(400).json({ messages });
         }
         else if (error instanceof Error) {
@@ -52,17 +54,21 @@ const login = async function (req, res) {
             where: { email: validatedData.email },
         });
         if (!existingUser) {
-            return res.status(400).json({ message: "User Not found, please register first" });
+            return res
+                .status(400)
+                .json({ message: "User Not found, please register first" });
         }
         const validPassword = await bcrypt_1.default.compare(validatedData.password, existingUser.password);
         if (!validPassword) {
             return res.status(400).json({ message: "Invalid Password" });
         }
-        const token = (0, jsonwebtoken_1.sign)({ userId: existingUser.id }, config_1.config.jwt_key, { expiresIn: '72h' });
-        res.cookie('token', token, {
-            path: '/',
+        const token = (0, jsonwebtoken_1.sign)({ userId: existingUser.id }, config_1.config.jwt_key, {
+            expiresIn: "72h",
+        });
+        res.cookie("token", token, {
+            path: "/",
             expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
-            sameSite: 'lax'
+            sameSite: "lax",
         });
         res.json({
             message: `${existingUser.name} login succesfully`,
@@ -71,7 +77,7 @@ const login = async function (req, res) {
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
-            const messages = error.errors.map(err => err.message);
+            const messages = error.errors.map((err) => err.message);
             return res.status(400).json({ messages });
         }
         else if (error instanceof Error) {
@@ -85,7 +91,7 @@ const login = async function (req, res) {
 exports.login = login;
 const logout = async (req, res) => {
     try {
-        res.clearCookie('token', { path: '/' });
+        res.clearCookie("token", { path: "/" });
         const _req = req;
         const userId = parseInt(_req.userId, 10);
         console.log("Parsed userId as number:", userId);
@@ -95,7 +101,7 @@ const logout = async (req, res) => {
         const user = await db_1.default.user.findFirst({
             where: {
                 id: userId, // Directly compare the id
-            }
+            },
         });
         const name = user?.name;
         return res.json({ user: `${name} has logged out` });
