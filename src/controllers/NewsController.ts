@@ -93,7 +93,7 @@ const createNews = async function(req: Request, res: Response) {
   }
 };
 
-const getNews = async function(req:Request,res:Response){
+const getAllNews = async function(req:Request,res:Response){
   try {
    let page = Number(req.query.page) || 1; 
     if(page<=0) page = 1; 
@@ -137,6 +137,33 @@ catch(error){
 }
 }
 
+const showNews = async function(req: Request, res: Response) {
+  try {
+    const id = req.params.id;
+    const news = await prisma.news.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profile: true,
+          },
+        },
+      },
+    });
+
+  
+
+    const newsTransform =  news ?  await transformNewsAPi(news):null;
+    return res.status(200).json({ news: newsTransform });
+    
+  } catch (error) {
+    return res.status(500).json({ message: "An unexpected error occurred" });
+  }
+}
 
 
-export {createNews,getNews};
+export {createNews,getAllNews,showNews};

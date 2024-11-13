@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNews = exports.createNews = void 0;
+exports.showNews = exports.getAllNews = exports.createNews = void 0;
 /* eslint-disable @typescript-eslint/no-unused-vars */
 const zod_1 = require("zod");
 const db_1 = __importDefault(require("../config/db"));
@@ -67,7 +67,7 @@ const createNews = async function (req, res) {
     }
 };
 exports.createNews = createNews;
-const getNews = async function (req, res) {
+const getAllNews = async function (req, res) {
     try {
         let page = Number(req.query.page) || 1;
         if (page <= 0)
@@ -105,4 +105,29 @@ const getNews = async function (req, res) {
         return res.status(500).json({ message: "An unexpected error occurred" });
     }
 };
-exports.getNews = getNews;
+exports.getAllNews = getAllNews;
+const showNews = async function (req, res) {
+    try {
+        const id = req.params.id;
+        const news = await db_1.default.news.findUnique({
+            where: {
+                id: Number(id),
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        profile: true,
+                    },
+                },
+            },
+        });
+        const newsTransform = news ? await (0, NewsApiTransform_1.default)(news) : null;
+        return res.status(200).json({ news: newsTransform });
+    }
+    catch (error) {
+        return res.status(500).json({ message: "An unexpected error occurred" });
+    }
+};
+exports.showNews = showNews;
