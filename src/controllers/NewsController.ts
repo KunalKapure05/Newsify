@@ -1,17 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from "zod";
 import prisma from "../DB/db";
 import { Request, Response } from "express";
 import { newsSchema } from "../Validation/newsValidate";
 import { AuthRequest } from "../Interfaces/AuthRequest";
-import {
-  generateRandomNumber,
-  imageValidator,
-  removeImage,
-} from "../utils/helper";
+import {generateRandomNumber, imageValidator,removeImage,} from "../utils/helper";
 import { UploadedFile } from "express-fileupload";
 import transformNewsAPi from "../utils/NewsApiTransform";
 import redisCache from "../DB/redis";
+import logger from "../config/logger";
 
 const createNews = async function (req: Request, res: Response) {
   try {
@@ -77,6 +73,7 @@ const createNews = async function (req: Request, res: Response) {
 
     return res.status(200).json({ news });
   } catch (error) {
+    logger.error(error);
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
@@ -117,7 +114,6 @@ const getAllNews = async function (req: Request, res: Response) {
     );
     const totalNews = await prisma.news.count();
     const totalPages = Math.ceil(totalNews / limit);
-
     return res.status(200).json({
       news: newsTransform,
       metadata: {
@@ -127,6 +123,7 @@ const getAllNews = async function (req: Request, res: Response) {
       },
     });
   } catch (error) {
+    logger.error(error);
     return res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
@@ -152,6 +149,7 @@ const showNews = async function (req: Request, res: Response) {
     const newsTransform = news ? await transformNewsAPi(news) : null;
     return res.status(200).json({ news: newsTransform });
   } catch (error) {
+    logger.error(error);
     return res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
@@ -217,6 +215,7 @@ const updateNews = async function (req: Request, res: Response) {
         .json({ message: "News updated successfully", news: updatedNews });
     }
   } catch (error) {
+    logger.error(error);
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
@@ -259,6 +258,7 @@ const deleteNews = async function (req: Request, res: Response) {
       .status(200)
       .json({ message: "News deleted successfully", news: response });
   } catch (error) {
+    logger.error(error);
     return res.status(500).json({ message: "An unexpected error occurred" });
   }
 };

@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { config } from "../config/config";
 import { AuthRequest } from "../Interfaces/AuthRequest";
+import logger from "../config/logger";
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -35,6 +36,7 @@ const register = async (req: Request, res: Response) => {
       token: token,
     });
   } catch (error) {
+    logger.error(error);
     if (error instanceof z.ZodError) {
       const messages = error.errors.map((err) => err.message);
       return res.status(400).json({ messages });
@@ -84,6 +86,7 @@ const login = async function (req: Request, res: Response) {
       token,
     });
   } catch (error) {
+    logger.error(error);
     if (error instanceof z.ZodError) {
       const messages = error.errors.map((err) => err.message);
       return res.status(400).json({ messages });
@@ -118,8 +121,9 @@ const logout = async (req: Request, res: Response) => {
 
     return res.json({ user: `${name} has logged out` });
 
-    return res.status(200).json({ message: "Logged Out Succesfully" });
+    
   } catch (error) {
+    logger.error(error);
     return res.status(500).json({ message: "Error Logging out", error: error });
   }
 };

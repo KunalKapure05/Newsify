@@ -4,13 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteNews = exports.updateNews = exports.showNews = exports.getAllNews = exports.createNews = void 0;
-/* eslint-disable @typescript-eslint/no-unused-vars */
 const zod_1 = require("zod");
 const db_1 = __importDefault(require("../DB/db"));
 const newsValidate_1 = require("../Validation/newsValidate");
 const helper_1 = require("../utils/helper");
 const NewsApiTransform_1 = __importDefault(require("../utils/NewsApiTransform"));
 const redis_1 = __importDefault(require("../DB/redis"));
+const logger_1 = __importDefault(require("../config/logger"));
 const createNews = async function (req, res) {
     try {
         const validatedData = newsValidate_1.newsSchema.parse(req.body);
@@ -62,6 +62,7 @@ const createNews = async function (req, res) {
         return res.status(200).json({ news });
     }
     catch (error) {
+        logger_1.default.error(error);
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ error: error.errors });
         }
@@ -107,6 +108,7 @@ const getAllNews = async function (req, res) {
         });
     }
     catch (error) {
+        logger_1.default.error(error);
         return res.status(500).json({ message: "An unexpected error occurred" });
     }
 };
@@ -132,6 +134,7 @@ const showNews = async function (req, res) {
         return res.status(200).json({ news: newsTransform });
     }
     catch (error) {
+        logger_1.default.error(error);
         return res.status(500).json({ message: "An unexpected error occurred" });
     }
 };
@@ -187,6 +190,7 @@ const updateNews = async function (req, res) {
         }
     }
     catch (error) {
+        logger_1.default.error(error);
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ error: error.errors });
         }
@@ -225,6 +229,7 @@ const deleteNews = async function (req, res) {
             .json({ message: "News deleted successfully", news: response });
     }
     catch (error) {
+        logger_1.default.error(error);
         return res.status(500).json({ message: "An unexpected error occurred" });
     }
 };

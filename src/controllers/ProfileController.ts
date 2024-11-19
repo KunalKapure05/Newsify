@@ -4,6 +4,7 @@ import prisma from "../DB/db";
 import { generateRandomNumber, imageValidator } from "../utils/helper";
 import path from "path";
 import { UploadedFile } from "express-fileupload";
+import logger from "../config/logger";
 
 const getUser = async function (req: Request, res: Response) {
   try {
@@ -31,6 +32,7 @@ const getUser = async function (req: Request, res: Response) {
 
     return res.json({ user });
   } catch (error) {
+    logger.error(error);
     console.error("Error occurred in getUser:", error);
     return res
       .status(500)
@@ -59,7 +61,7 @@ const updateUserProfile = async function (req: Request, res: Response) {
     const file: UploadedFile = Array.isArray(profile) ? profile[0] : profile;
 
     // Log the file details
-    console.log("Profile file details:", file);
+    logger.info("Profile file details:", file)
 
     const message = imageValidator(file.size, file.mimetype);
     if (message !== null) {
@@ -96,7 +98,7 @@ const updateUserProfile = async function (req: Request, res: Response) {
       message: "Profile updated successfully",
     });
   } catch (error) {
-    console.error("Error occurred in updateUserProfile:", error);
+    logger.error(error);
     return res
       .status(500)
       .json({ message: "An unexpected error occurred", error: error });

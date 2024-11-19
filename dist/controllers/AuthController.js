@@ -10,6 +10,7 @@ const zod_1 = require("zod");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const config_1 = require("../config/config");
+const logger_1 = __importDefault(require("../config/logger"));
 const register = async (req, res) => {
     try {
         const validatedData = validate_1.registerUserSchema.parse(req.body);
@@ -34,6 +35,7 @@ const register = async (req, res) => {
         });
     }
     catch (error) {
+        logger_1.default.error(error);
         if (error instanceof zod_1.z.ZodError) {
             const messages = error.errors.map((err) => err.message);
             return res.status(400).json({ messages });
@@ -76,6 +78,7 @@ const login = async function (req, res) {
         });
     }
     catch (error) {
+        logger_1.default.error(error);
         if (error instanceof zod_1.z.ZodError) {
             const messages = error.errors.map((err) => err.message);
             return res.status(400).json({ messages });
@@ -105,9 +108,9 @@ const logout = async (req, res) => {
         });
         const name = user?.name;
         return res.json({ user: `${name} has logged out` });
-        return res.status(200).json({ message: "Logged Out Succesfully" });
     }
     catch (error) {
+        logger_1.default.error(error);
         return res.status(500).json({ message: "Error Logging out", error: error });
     }
 };

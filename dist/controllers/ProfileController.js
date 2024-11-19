@@ -7,6 +7,7 @@ exports.updateUserProfile = exports.getUser = void 0;
 const db_1 = __importDefault(require("../DB/db"));
 const helper_1 = require("../utils/helper");
 const path_1 = __importDefault(require("path"));
+const logger_1 = __importDefault(require("../config/logger"));
 const getUser = async function (req, res) {
     try {
         const _req = req;
@@ -27,6 +28,7 @@ const getUser = async function (req, res) {
         return res.json({ user });
     }
     catch (error) {
+        logger_1.default.error(error);
         console.error("Error occurred in getUser:", error);
         return res
             .status(500)
@@ -50,7 +52,7 @@ const updateUserProfile = async function (req, res) {
         // Check if profile is an array or a single UploadedFile
         const file = Array.isArray(profile) ? profile[0] : profile;
         // Log the file details
-        console.log("Profile file details:", file);
+        logger_1.default.info("Profile file details:", file);
         const message = (0, helper_1.imageValidator)(file.size, file.mimetype);
         if (message !== null) {
             return res.status(400).json({
@@ -79,7 +81,7 @@ const updateUserProfile = async function (req, res) {
         });
     }
     catch (error) {
-        console.error("Error occurred in updateUserProfile:", error);
+        logger_1.default.error(error);
         return res
             .status(500)
             .json({ message: "An unexpected error occurred", error: error });
