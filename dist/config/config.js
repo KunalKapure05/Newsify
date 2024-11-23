@@ -12,5 +12,7 @@ const _config = {
     smtp_user: process.env.SMTP_USER,
     smtp_password: process.env.SMTP_PASSWORD,
     email_from: process.env.EMAIL_FROM,
+    host: process.env.REDIS_HOST,
+    Port: parseInt(process.env.REDIS_PORT),
 };
 exports.config = Object.freeze(_config);

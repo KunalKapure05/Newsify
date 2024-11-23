@@ -11,8 +11,8 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const config_1 = require("../config/config");
 const logger_1 = __importDefault(require("../config/logger"));
-const mailer_1 = require("../config/mailer");
 const emailSchema_1 = require("../Validation/emailSchema");
+const sendEmailjob_1 = require("../utils/sendEmailjob");
 const register = async (req, res) => {
     try {
         const validatedData = validate_1.registerUserSchema.parse(req.body);
@@ -119,15 +119,10 @@ const logout = async (req, res) => {
 exports.logout = logout;
 const emailSender = async (req, res) => {
     try {
-        const validatedData = emailSchema_1.emailSchema.parse(req.body);
-        const { toMail, subject, body } = validatedData;
-        await (0, mailer_1.sendEmail)(toMail, subject, body);
-        return res.status(200).json({ message: " Email sent successfully",
-            payload: {
-                toMail,
-                subject,
-                body,
-            } });
+        const payload = emailSchema_1.emailSchema.parse(req.body);
+        await sendEmailjob_1.emailQueue.add("email-queue", payload);
+        return res.status(200).json({ message: " job added successfully",
+            payload: payload });
     }
     catch (error) {
         logger_1.default.error(error);

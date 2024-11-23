@@ -21,4 +21,5 @@ app.get('/', (req, res) => {
     res.json("Welcome to homepage!");
 });
 app.use('/api', api_1.default);
+require("./utils/sendEmailjob");
 exports.default = app;

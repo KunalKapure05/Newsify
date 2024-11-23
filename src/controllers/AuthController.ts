@@ -7,8 +7,9 @@ import { sign } from "jsonwebtoken";
 import { config } from "../config/config";
 import { AuthRequest } from "../Interfaces/AuthRequest";
 import logger from "../config/logger";
-import { sendEmail } from "../config/mailer";
 import { emailSchema } from "../Validation/emailSchema";
+import { emailQueue } from "../utils/sendEmailjob";
+
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -132,17 +133,14 @@ const logout = async (req: Request, res: Response) => {
 
 const emailSender  = async(req: Request, res: Response)=>{
   try {
-    const validatedData = emailSchema.parse(req.body);
-    const {toMail , subject , body} = validatedData;
-    await sendEmail(toMail, subject, body);
+    const payload = emailSchema.parse(req.body);
 
-  
-return res.status(200).json({ message: " Email sent successfully", 
-  payload: {
-    toMail,
-    subject,
-    body,
-}});
+      await emailQueue.add("email-queue", payload);
+
+
+return res.status(200).json({ message: " job added successfully", 
+  payload: payload});
+
   } 
   catch (error) {
     logger.error(error);

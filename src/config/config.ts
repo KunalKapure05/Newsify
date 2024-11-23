@@ -11,6 +11,10 @@ const _config =  {
     smtp_user: process.env.SMTP_USER as string,
     smtp_password : process.env.SMTP_PASSWORD as string,
     email_from : process.env.EMAIL_FROM as string,
+    host : process.env.REDIS_HOST as string,
+    Port : parseInt(process.env.REDIS_PORT as string),
+   
+
     
 }
 

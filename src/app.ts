@@ -20,6 +20,8 @@ app.get('/', (req, res) => {
 
 app.use('/api', apiRoutes);
 
+import './utils/sendEmailjob'
+
 
 
 
