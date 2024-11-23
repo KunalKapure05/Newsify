@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.login = exports.register = void 0;
+exports.emailSender = exports.logout = exports.login = exports.register = void 0;
 const db_1 = __importDefault(require("../DB/db"));
 const validate_1 = require("../Validation/validate");
 const zod_1 = require("zod");
@@ -11,6 +11,8 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const config_1 = require("../config/config");
 const logger_1 = __importDefault(require("../config/logger"));
+const mailer_1 = require("../config/mailer");
+const emailSchema_1 = require("../Validation/emailSchema");
 const register = async (req, res) => {
     try {
         const validatedData = validate_1.registerUserSchema.parse(req.body);
@@ -115,3 +117,30 @@ const logout = async (req, res) => {
     }
 };
 exports.logout = logout;
+const emailSender = async (req, res) => {
+    try {
+        const validatedData = emailSchema_1.emailSchema.parse(req.body);
+        const { toMail, subject, body } = validatedData;
+        await (0, mailer_1.sendEmail)(toMail, subject, body);
+        return res.status(200).json({ message: " Email sent successfully",
+            payload: {
+                toMail,
+                subject,
+                body,
+            } });
+    }
+    catch (error) {
+        logger_1.default.error(error);
+        if (error instanceof zod_1.z.ZodError) {
+            const messages = error.errors.map((err) => err.message);
+            return res.status(400).json({ messages });
+        }
+        else if (error instanceof Error) {
+            res.status(400).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: "Error while sending an e-mail,please try again later " });
+        }
+    }
+};
+exports.emailSender = emailSender;

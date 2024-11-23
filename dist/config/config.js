@@ -6,6 +6,11 @@ const dotenv_1 = require("dotenv");
 const _config = {
     port: process.env.PORT,
     jwt_key: process.env.JWT_KEY,
-    app_url: process.env.APP_URL
+    app_url: process.env.APP_URL,
+    smtp_port: process.env.SMTP_PORT,
+    smtp_host: process.env.SMTP_HOST,
+    smtp_user: process.env.SMTP_USER,
+    smtp_password: process.env.SMTP_PASSWORD,
+    email_from: process.env.EMAIL_FROM,
 };
 exports.config = Object.freeze(_config);

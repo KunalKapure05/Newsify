@@ -7,6 +7,8 @@ import { sign } from "jsonwebtoken";
 import { config } from "../config/config";
 import { AuthRequest } from "../Interfaces/AuthRequest";
 import logger from "../config/logger";
+import { sendEmail } from "../config/mailer";
+import { emailSchema } from "../Validation/emailSchema";
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -128,4 +130,31 @@ const logout = async (req: Request, res: Response) => {
   }
 };
 
-export { register, login, logout };
+const emailSender  = async(req: Request, res: Response)=>{
+  try {
+    const validatedData = emailSchema.parse(req.body);
+    const {toMail , subject , body} = validatedData;
+    await sendEmail(toMail, subject, body);
+
+  
+return res.status(200).json({ message: " Email sent successfully", 
+  payload: {
+    toMail,
+    subject,
+    body,
+}});
+  } 
+  catch (error) {
+    logger.error(error);
+    if (error instanceof z.ZodError) {
+      const messages = error.errors.map((err) => err.message);
+      return res.status(400).json({ messages });
+    } else if (error instanceof Error) {
+      res.status(400).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Error while sending an e-mail,please try again later " });
+    }
+  }
+}
+
+export { register, login, logout ,emailSender};
